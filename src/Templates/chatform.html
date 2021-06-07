@@ -1,0 +1,12 @@
+﻿<body style="margin:0px; padding:0px; overflow:hidden;">
+    <link rel="/bootstrap.min.css"/>
+    <link rel="/bootstrap-theme.min.css" />
+    <div style="border:1px solid cyan; width:100%; height:100%; display:block; background-color:#111111;">
+        <form method="post" action="/send">
+
+            <input type="text" class="form-control" style="width:87%;" name="message" id="message" autofocus />
+            <input type="submit" class="btn btn-default" value="Send" style="width:9%;" />
+            <input type="hidden" name="UserID" value="{{UserID}}">
+        </form>
+    </div>
+</body>
