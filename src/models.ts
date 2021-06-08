@@ -14,8 +14,18 @@ export class Client {
         this.response.write(`<div class='message'><span style='color:cyan;'>${message.TimeStamp} ${message.UserName}:</span> ${message.Text}</div>`);
     }
 }
+export class User {
+    public UserName: string = "";
+    public Password: string = ""; //hash
+
+}
 export class Message {
     public UserName: string = "";
     public TimeStamp: number = 0;
     public Text: string = "";
+}
+export class ServerData {
+    public Messages: Message[] = [];
+    public Users: User[] =[];
+
 }

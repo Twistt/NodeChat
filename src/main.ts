@@ -3,13 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import client = require("./models");
 import './string.extensions' // depends on where the file is relative to your source code
-import { Client, Message } from "./models";
+import { Client, Message, ServerData } from "./models";
 import { decode } from "querystring";
 
 const host = '127.0.0.1';
 const port = 8000;
+let serverData = new ServerData();
 const clients: Client[] = [];
-const messages: Message[] = [];
+//const messages: Message[] = [];
 
 const requestListener = function (req: any, res: ServerResponse) {
     let cookies = parseCookies(req.headers.cookie);
@@ -38,7 +39,7 @@ const requestListener = function (req: any, res: ServerResponse) {
 
         fs.readFile(path.join(__dirname, "/Templates/index.html"), (err, contents) => {
             client.response.write(contents);
-            messages.last(100).forEach((msg) => {
+            serverData.Messages.last(100).forEach((msg) => {
                 client.send(msg);
             });
         });
@@ -58,9 +59,9 @@ const requestListener = function (req: any, res: ServerResponse) {
             msg.Text = result[0];
             msg.UserName = client.name;
             msg.TimeStamp = Date.now();
-            messages.push(msg);
+            serverData.Messages.push(msg);
             console.log(`${client.name}: ${result[0]}`);
-            fs.readFile(path.join(__dirname, "/Templates/chatform.html"), (err, contents) => {
+            fs.readFile(path.join(__dirname, "/Templates/chatform.html"), 'utf8', (err, contents) => {
                 res.write(contents);
                 res.end();
             });
@@ -69,14 +70,16 @@ const requestListener = function (req: any, res: ServerResponse) {
                 //console.log(user.name);
                 user.send(msg);
             });
-
+            //this saves the data to a file - BUT it does not need to saved every time anyone sends a message it SHOULD be done on a timer so it saves every so often.
+            saveServerdata();
         });
 
 
     }
 };
-
+loadServerData();
 const server = createServer(requestListener);
+
 function randomName() {
     return Math.random().toString(16).substr(2, 8);
 }
@@ -91,6 +94,26 @@ function stringifyCookies(cookies:any) {
     return Object.entries(cookies)
         .map(([k, v]) => k + '=' + encodeURI(v as string))
         .join('; ');
+}
+function saveServerdata():void {
+    var fs = require('fs');
+    fs.writeFile(__dirname, "/serverdata.json", JSON.stringify(serverData), function (err:any) {
+        if (err) {
+            return console.log(err);
+        }
+
+        console.log("The file was saved!");
+    }); 
+}
+function loadServerData(): void {
+    fs.exists(path.join(__dirname, "/serverdata.json"), (exists) => {
+
+        if (exists) fs.readFile(path.join(__dirname, "/serverdata.json"), 'utf8', (err, contents) => {
+            console.log(contents);
+            serverData = JSON.parse(contents);
+        });
+    });
+
 }
 server.listen(port, host, () => {
     console.log(`Server is running on http://${host}:${port}`);
